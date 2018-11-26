@@ -398,29 +398,45 @@ err:
 	return -1;
 }
 
-static void apply_prefix_filter(struct interface *iface)
+/* Removes unwanted prefixes from addrs array, but does not realloc memory.
+ *
+ * Returns items left in the array.
+ */
+int __apply_prefix_filter(struct odhcpd_ipaddr *addrs, size_t addrs_len,
+			struct in6_addr *filter, uint8_t filter_length)
 {
-	size_t cnt = iface->addr6_len;
-	if (cnt == 0 || iface->addr6 == NULL || iface->pio_filter_length == 0) {
-		return;
+	if (addrs_len == 0 || addrs == NULL || filter_length == 0) {
+		return addrs_len;
 	}
 
 	/* Could be negative when the only prefix is to be filtered out */
 	signed int curr_pos = 0;
-	for (curr_pos = 0; curr_pos < (int) cnt; curr_pos++) {
-		struct odhcpd_ipaddr *addr = &iface->addr6[curr_pos];
+	for (curr_pos = 0; curr_pos < (int) addrs_len; curr_pos++) {
+		struct odhcpd_ipaddr *addr = &addrs[curr_pos];
 
-		if (odhcpd_bmemcmp(&addr->addr.in6, &iface->pio_filter_addr,
-				iface->pio_filter_length) != 0 ||
-				addr->prefix < iface->pio_filter_length) {
-			memmove(addr, addr + 1, (cnt - curr_pos - 1) * sizeof(*addr));
-			cnt--;
+		if (odhcpd_bmemcmp(&addr->addr.in6, filter,
+				filter_length) != 0 ||
+				addr->prefix < filter_length) {
+			memmove(addr, addr + 1, (addrs_len - curr_pos - 1) * sizeof(*addr));
+			addrs_len--;
 			curr_pos--;
 		}
 	}
 
-	iface->addr6 = realloc(iface->addr6, cnt * sizeof(*iface->addr6));
-	iface->addr6_len = cnt;
+	return addrs_len;
+}
+
+void apply_prefix_filter(struct interface *iface)
+{
+	if (iface->pio_filter_length == 0) {
+		return;
+	}
+
+	size_t addrs_left = __apply_prefix_filter(iface->addr6, iface->addr6_len,
+				&iface->pio_filter_addr, iface->pio_filter_length);
+
+	iface->addr6 = realloc(iface->addr6, addrs_left * sizeof(*iface->addr6));
+	iface->addr6_len = addrs_left;
 }
 
 int config_parse_interface(void *data, size_t len, const char *name, bool overwrite)

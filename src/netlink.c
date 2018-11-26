@@ -165,6 +165,9 @@ static void refresh_iface_addr6(struct netevent_handler_info *event_info)
 	if (len < 0)
 		return;
 
+	len = __apply_prefix_filter(addr, len, &iface->pio_filter_addr, iface->pio_filter_length);
+	addr = realloc(addr, len * sizeof(*addr));
+
 	bool change = len != (ssize_t)iface->addr6_len;
 	for (ssize_t i = 0; !change && i < len; ++i)
 		if (!IN6_ARE_ADDR_EQUAL(&addr[i].addr.in6, &iface->addr6[i].addr.in6) ||

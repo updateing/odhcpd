@@ -291,6 +291,9 @@ int odhcpd_netmask2bitlen(bool v6, void *mask);
 bool odhcpd_bitlen2netmask(bool v6, unsigned int bits, void *mask);
 bool odhcpd_valid_hostname(const char *name);
 
+int __apply_prefix_filter(struct odhcpd_ipaddr *addrs, size_t addrs_len,
+			struct in6_addr *filter, uint8_t filter_length);
+void apply_prefix_filter(struct interface *iface);
 int config_parse_interface(void *data, size_t len, const char *iname, bool overwrite);
 
 #ifdef WITH_UBUS
