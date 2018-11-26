@@ -398,6 +398,31 @@ err:
 	return -1;
 }
 
+static void apply_prefix_filter(struct interface *iface)
+{
+	size_t cnt = iface->addr6_len;
+	if (cnt == 0 || iface->addr6 == NULL || iface->pio_filter_length == 0) {
+		return;
+	}
+
+	/* Could be negative when the only prefix is to be filtered out */
+	signed int curr_pos = 0;
+	for (curr_pos = 0; curr_pos < (int) cnt; curr_pos++) {
+		struct odhcpd_ipaddr *addr = &iface->addr6[curr_pos];
+
+		if (odhcpd_bmemcmp(&addr->addr.in6, &iface->pio_filter_addr,
+				iface->pio_filter_length) != 0 ||
+				addr->prefix < iface->pio_filter_length) {
+			memmove(addr, addr + 1, (cnt - curr_pos - 1) * sizeof(*addr));
+			cnt--;
+			curr_pos--;
+		}
+	}
+
+	iface->addr6 = realloc(iface->addr6, cnt * sizeof(*iface->addr6));
+	iface->addr6_len = cnt;
+}
+
 int config_parse_interface(void *data, size_t len, const char *name, bool overwrite)
 {
 	struct blob_attr *tb[IFACE_ATTR_MAX], *c;
@@ -736,8 +761,10 @@ int config_parse_interface(void *data, size_t len, const char *name, bool overwr
 				sscanf(delim, "%i", &l) == 0 || l > 128 ||
 				inet_pton(AF_INET6, astr, &iface->pio_filter_addr) == 0)
 			iface->pio_filter_length = 0;
-		else
+		else {
 			iface->pio_filter_length = l;
+			apply_prefix_filter(iface);
+		}
 
 		if (astr)
 			free(astr);
