@@ -20,7 +20,7 @@ prefix delegation and can be used to relay RA, DHCPv6 and NDP between routed
 
    relay:	RD relay between master and slave interfaces
    a) support for rewriting announced DNS-server addresses in relay mode
-   
+
 2. DHCPv6-support with 2 modes of operation
    server: stateless, stateful and PD-server mode
    a) stateless and stateful address assignment
@@ -30,7 +30,7 @@ prefix delegation and can be used to relay RA, DHCPv6 and NDP between routed
 
    relay: 	mostly standards-compliant DHCPv6-relay
    a) support for rewriting announced DNS-server addresses
-   
+
 3. DHCPv4-support
    server: stateless and stateful mode
 
@@ -44,7 +44,7 @@ prefix delegation and can be used to relay RA, DHCPv6 and NDP between routed
 ** Compiling **
 
 odhcpd uses cmake:
-* To prepare a Makefile use:  "cmake ." 
+* To prepare a Makefile use:  "cmake ."
 * To build / install use: "make" / "make install" afterwards.
 * To build DEB or RPM packages use: "make package" afterwards.
 
@@ -134,9 +134,9 @@ ra_mtu			integer 0			MTU to be advertised in
 							RA messages
 ndproxy_routing		bool	1			Learn routes from NDP
 ndproxy_slave		bool	0			NDProxy external slave
-prefix_filter		string	::/0			Only advertise on-link prefixes within
-			[IPv6 prefix]			the provided IPv6 prefix; others are
-							filtered out.
+prefix_filter		string	::/0			Only advertise on-link prefixes and
+			[IPv6 prefix]			allocate addresses within the provided
+							IPv6 prefix; others are filtered out.
 
 
 Sections of type host (static leases)
