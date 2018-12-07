@@ -28,6 +28,7 @@ enum {
 	IFACE_ATTR_IFNAME,
 	IFACE_ATTR_NETWORKID,
 	IFACE_ATTR_DYNAMICDHCP,
+	IFACE_ATTR_DYNAMICDHCPV6,
 	IFACE_ATTR_IGNORE,
 	IFACE_ATTR_LEASETIME,
 	IFACE_ATTR_LIMIT,
@@ -71,6 +72,7 @@ static const struct blobmsg_policy iface_attrs[IFACE_ATTR_MAX] = {
 	[IFACE_ATTR_IFNAME] = { .name = "ifname", .type = BLOBMSG_TYPE_STRING },
 	[IFACE_ATTR_NETWORKID] = { .name = "networkid", .type = BLOBMSG_TYPE_STRING },
 	[IFACE_ATTR_DYNAMICDHCP] = { .name = "dynamicdhcp", .type = BLOBMSG_TYPE_BOOL },
+	[IFACE_ATTR_DYNAMICDHCPV6] = { .name = "dynamicdhcpv6", .type = BLOBMSG_TYPE_BOOL },
 	[IFACE_ATTR_IGNORE] = { .name = "ignore", .type = BLOBMSG_TYPE_BOOL },
 	[IFACE_ATTR_LEASETIME] = { .name = "leasetime", .type = BLOBMSG_TYPE_STRING },
 	[IFACE_ATTR_START] = { .name = "start", .type = BLOBMSG_TYPE_INT32 },
@@ -512,6 +514,12 @@ int config_parse_interface(void *data, size_t len, const char *name, bool overwr
 	iface->inuse = true;
 
 	if ((c = tb[IFACE_ATTR_DYNAMICDHCP]))
+		iface->no_dynamic_dhcp = !blobmsg_get_bool(c);
+
+	/* Allow this option to override "dynamicdhcp", in case someone
+	 * wants DHCPv6 to behave differently than DHCPv4.
+	 */
+	if ((c = tb[IFACE_ATTR_DYNAMICDHCPV6]))
 		iface->no_dynamic_dhcp = !blobmsg_get_bool(c);
 
 	if (overwrite && (c = tb[IFACE_ATTR_IGNORE]))

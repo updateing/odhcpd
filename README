@@ -90,6 +90,9 @@ ndp			string	disabled		Neighbor Discovery Proxy
 
 dynamicdhcp		bool	1			Dynamically create leases
 							for DHCPv4 and DHCPv6
+dynamicdhcpv6		bool	1			Dynamically create leases
+							for DHCPv6, overrides the option
+							above if given
 dhcpv4_forcereconf	bool	0			Force reconfiguration by sending
 							force renew message even if the client
 							did not include the force renew nonce
